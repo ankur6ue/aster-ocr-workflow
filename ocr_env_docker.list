@@ -1,0 +1,5 @@
+PARENT_PATH=/opt/ocr
+DEST_BASE_PATH=/tmp/OCR/
+S3_BUCKET_NAME=ankur6ue-dev-ocr-data
+REC_MODEL_PATH=/opt/ocr/models/recognition-ASTER/demo.pth.tar
+DET_MODEL_PATH=/opt/ocr/models/detection-CRAFT/craft_mlt_25k.pth

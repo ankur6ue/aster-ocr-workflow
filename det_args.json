@@ -1,0 +1,13 @@
+{
+  "text_threshold": 0.7,
+  "low_text": 0.4,
+  "link_threshold": 0.4,
+  "cuda": false,
+  "canvas_size": 1280,
+  "mag_ratio": 1.5,
+  "poly": false,
+  "show_time": false,
+  "test_folder": "/home/ankur/dev/apps/ML/OCR/data/demo_images/checks",
+  "refine": false,
+  "refiner_model": "weights/craft_refiner_CTW1500.pth"
+}
