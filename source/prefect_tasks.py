@@ -60,7 +60,7 @@ def get_files_s3(input_file_names):
     logger.info("Reading input image files from S3 bucket: {0}".format(bucket_name))
 
     try:
-        local_paths = s3_to_local(bucket_name, prefix, ['.jpg'], dest_base_path, logger, input_file_names=input_file_names)
+        local_paths = s3_to_local(bucket_name, prefix, ['.bmp', '.png', '.jpg'], dest_base_path, logger, input_file_names=input_file_names)
         # open local files and return the PIL Image objects. Can't return paths, because paths are local and not
         # valid if a subsequent task runs on another node
         if len(local_paths) == 0:
