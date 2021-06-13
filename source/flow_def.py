@@ -24,6 +24,9 @@ def create_flow(name):
         crops = get_crops.map(flatten(det_results))
         with case(cond, True):
             write_to_s3.map(flatten(det_results), unmapped('bboxes'))
+            write_to_s3.map(flatten(det_results), unmapped('affinity_score_map'))
+            write_to_s3.map(flatten(det_results), unmapped('region_score_map'))
+            write_to_s3.map(flatten(det_results), unmapped('connected_component_mask'))
 
         rec_args = get_args("rec_args.json")
         # rec_args.set_depedencies()

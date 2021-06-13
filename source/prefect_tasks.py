@@ -81,12 +81,13 @@ def get_files_s3(input_file_names):
 def write_to_s3(data, key_name):
 
     # This method copies a dictionary contained in the input "data" argument indexed by "key_name" to S3.
-    # data is a dictionary that must contain "img_name" key and key specified by the key_name argument. The value
+    # data is a dictionary that contain "img_name" and key_name keys. The value
     # corresponding to img_name key is the name of the image being processed, and the value corresponding to the
     # key_name key is another dictionary that is required to be uploaded to S3 under a s3 key created by
     # concatenating the base image name (without the extension) and the key_name. Eg. if img_name is IMG9134.jpg,
     # and key_name is bboxes, then s3 prefix would be IMG9134/bboxes.
-    # The dictionary to be copied is first copied to a local folder and then transferred to S3.
+    # The dictionary to be copied is first copied to a local folder and then transferred to S3. This is because
+    # AWS S3 APIs are easier to use with a local file on disk then in-memory objects
     logger = prefect.context.get("logger")
     # check if the required keys exist
     if data is None or data.get("img_name") is None or data.get(key_name) is None:
@@ -100,16 +101,29 @@ def write_to_s3(data, key_name):
     # create local directory if it doesn't exist
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)
-    local_path = os.path.join(local_dir, key_name + '.json')
-    s3_prefix = 'results/{0}/{1}.json'.format(base, key_name)
-    # write to local disk and then copy to s3
-    if data.get(key_name) == {}:
-        logger.warn("write_to_s3: No data in {0}".format(key_name))
-        return  # nothing to write or transfer
 
-    with open(local_path, 'w') as f:
-        json.dump(data[key_name], f)
-    upload_to_s3(local_path, bucket_name, s3_prefix)
+    # get data corresponding to the key
+    key_data = data.get(key_name)
+    # case1:  key data is a dict
+    if isinstance(key_data, dict):
+        if data.get(key_name) == {}:
+            logger.warn("write_to_s3: No data in {0}".format(key_name))
+            return  # nothing to write or transfer
+        local_path = os.path.join(local_dir, key_name + '.json')
+        s3_prefix = 'results/{0}/{1}.json'.format(base, key_name)
+        # write to local disk and then copy to s3
+        with open(local_path, 'w') as f:
+            json.dump(data[key_name], f)
+        upload_to_s3(local_path, bucket_name, s3_prefix)
+    # case2:  key data is an image
+    if isinstance(key_data, np.ndarray):
+        local_path = os.path.join(local_dir, key_name + '.png')
+        s3_prefix = 'results/{0}/{1}.png'.format(base, key_name)
+        # write to local disk and then copy to s3
+        im = Image.fromarray(key_data)
+        im.save(local_path)
+        upload_to_s3(local_path, bucket_name, s3_prefix)
+
 
 
 @task(name="write_to_s3_")
